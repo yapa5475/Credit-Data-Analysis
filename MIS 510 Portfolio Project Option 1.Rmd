@@ -1,0 +1,133 @@
+---
+title: "MIS 510 Porfolio Project 1"
+author: "Yash Parekh"
+date: "7/4/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Import
+
+```{r}
+GermanCredit.df <- read.csv("C:/Users/yashp/Google Drive/MIS-510/Portfolio Project/GermanCredit.csv", header=TRUE)
+```
+
+## Data Exploration
+
+Data exploration functions are useful for extracting specific information around the data. The following five functions give insight into the Banks data.
+
+```{r}
+# The summary() function outputs summary statistics for all the variables in the banks data frame. 
+summary(GermanCredit.df)
+
+# The mean function returns the average for all the variables in the banks data frame.
+data.frame(mean=sapply(GermanCredit.df, mean, na.rm=TRUE))
+
+# The median function returns the median value for all the variables in the banks data frame.
+data.frame(median=sapply(GermanCredit.df, median, na.rm=TRUE))
+
+# The sd functions returns the standard deviation value for all the variables in the banks data frame.
+data.frame(sd=sapply(GermanCredit.df, sd, na.rm=TRUE))
+
+# The range functions returns the range for all the variables in the banks data frame.
+data.frame(range=sapply(GermanCredit.df, range, na.rm=TRUE))
+
+# The length functions returns the length for all the variables in the banks data frame.
+data.frame(length=sapply(GermanCredit.df, length))
+```
+
+## Divide data
+
+The data is divided in to two partitions, one for training and one for validation. This can be done using the sample() function. The following code shown aims to randomly partition the data in to two data sets.
+
+
+```{r}
+# partition data in to training (60%) and validation (40%) using sample() function
+# first randomly sample 60% of the data and put them into the training set
+train.rows <- sample(rownames(GermanCredit.df), dim(GermanCredit.df)[1]*0.6)
+train.data <- GermanCredit.df[train.rows,]
+
+# next, assign the rows that are not already in the training row in to the validation data
+valid.rows <- setdiff(rownames(GermanCredit.df), train.rows)
+valid.data <- GermanCredit.df[valid.rows, ]
+```
+
+## Explore Classification Models
+
+First, logistic regression will be used to evaluate the data. A logistic regression is appropriate when the outcome variable is categorical, in other words has set of potential values. The end result classifies the record into one of the classes based on the predictor variables (Shumeli, et al. 2018)
+
+
+```{r}
+# Divide data into training and validation partitions
+# randomly sample 60% of the rows for training, the remaining 40% for validation
+train.rows <- sample(rownames(GermanCredit.df), dim(GermanCredit.df)[1]*0.6)
+
+train.data <- GermanCredit.df[train.rows,]
+
+# assign rows not in train into validation
+valid.rows <- setdiff(rownames(GermanCredit.df), train.rows)
+valid.data <- GermanCredit.df[valid.rows,]
+```
+
+
+## Logistic Regression
+
+A logistic regression will be run on the training AND validation data separately. First, below is a logistic regression for the training data.
+
+```{r}
+# Model amount as a function of the other attributes for training data
+
+logit.reg <- glm(as.factor(AMOUNT) ~ ., data = train.data, family = "binomial")
+
+options(scipen = 999)
+summary(logit.reg)
+```
+
+Next, below is the logistic regression for the validation data. 
+
+```{r}
+# Model amount as a function of the other attributes for validation data
+
+logit.reg <- glm(AMOUNT ~ ., data = valid.data)
+
+options(scipen = 999)
+summary(logit.reg)
+```
+
+
+## Classification Tree
+
+Similarly to the logistic regression, the classification tree will be conducted on the training AND validation data individually. First, below is a classification tree for the training data.
+
+```{r}
+# Classification tree
+
+library(rpart)
+library(rpart.plot)
+
+# classification tree for training data
+class.tree <- rpart(AMOUNT ~., data = train.data)
+prp(class.tree, type = 1, extra = 1, split.font = 1, varlen = -10)
+```
+
+Next, below is the classification tree for the validation data. 
+
+```{r}
+# classification tree for validation data
+class.tree <- rpart(AMOUNT ~., data = valid.data)
+prp(class.tree, type = 1, extra = 1, split.font = 1, varlen = -10)
+```
+
+## Analysis
+
+This portfolio project was an exercise on data exploration, data mining, and visualization. In going through this exercise, there were several skills that I gained and lessons that I learned. One of those skills was learning how to partition data. Shumeli, et al. (2018) identified partitioning the data as one of the core strategies in data mining algorithms. I found this to be relatively simple in R. First, I identified the partition using the dim() function and passing in 0.6 (which identifies the percent of the data which will be put in the first partition - 60%). That partition of data was put in to the train.data partition. The remaining data was put into the valid.data segment.
+
+The next part of this portfolio project is the data mining techniques. I conducted a logistic regression and made a classification tree on the partitioned data. The logistic regression was done using the logit() function on both the validation and test data. The as.factor() function was used to encode the amount variable as a factor. Next, a classification tree was done on the partitioned data using the "class.tree" function. A classification tree is significant in its ability to have recursive partitioning of the predictor variables, and due to the pruning methodology. As a result of the classification tree, any record can be assigned a class by dropping it down the tree until it reaches a terminal node (Shumeli, et al., 2018). 
+
+Overall, this portfolio project was a good exercise in data mining and visualization.It was mostly simple to do, and provided for a learning experience on data exploration, logistic regression, and visualization. 
+
+
+Shmueli, G., Bruce, P.C., Yahav, I., Patel, N.R., and Lichtendahl, K.C. (2018). Data mining for business analytics: Concepts, techniques, and applications in R. Wiley Publishing. ISBN: 9781118879337.
